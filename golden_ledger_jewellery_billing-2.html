@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#7b4a12">
+<title>Golden Ledger — Jewellery Billing</title>
+<style>
+:root{--gold:#a66a17;--gold2:#f4dfb4;--ink:#24211d;--muted:#716b62;--paper:#fffdf8;--line:#e8dfd0;--green:#176b45;--red:#a92f2f}
+*{box-sizing:border-box}body{margin:0;background:#f6f2ea;color:var(--ink);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:linear-gradient(135deg,#4e2d08,#a66a17);color:white;padding:22px 16px 18px}
+.head{max-width:980px;margin:auto;display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:15px;background:#fff2d6;color:#78490e;display:grid;place-items:center;font-size:26px}
+h1{font-size:23px;margin:0}header p{margin:3px 0 0;color:#ffefd5;font-size:13px}
+main{max-width:980px;margin:18px auto;padding:0 12px 32px}.tabs{display:flex;gap:8px;overflow:auto;margin-bottom:14px}
+button,.tab{font:inherit;border:0;border-radius:10px;padding:11px 14px;cursor:pointer;font-weight:650}
+.tab{background:#e9e0d2;color:#5b4d3b;white-space:nowrap}.tab.active{background:var(--gold);color:#fff}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 12px #43280008}
+h2{font-size:18px;margin:0 0 13px}h3{font-size:15px;margin:14px 0 8px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}.field.full{grid-column:1/-1}
+label{font-size:12px;color:var(--muted);font-weight:700}
+input,select,textarea{width:100%;min-width:0;border:1px solid #d8cbb8;border-radius:9px;background:white;padding:11px;font:inherit;color:var(--ink)}
+input:focus,select:focus{outline:2px solid #d7aa5b;border-color:var(--gold)}
+.primary{background:var(--gold);color:white}.secondary{background:#eee5d7;color:#4c3921}.danger{background:#fae6e3;color:#8b2525}.small{padding:7px 10px;font-size:12px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.summary{background:#f8eedc;border-radius:12px;padding:13px;margin-top:14px}
+.moneyrow{display:flex;justify-content:space-between;gap:14px;padding:4px 0}.moneyrow.total{font-size:19px;font-weight:800;border-top:1px solid #ddc59d;margin-top:7px;padding-top:10px}
+.note{font-size:12px;color:var(--muted);margin:10px 0 0}
+.hidden{display:none!important}.searchrow{display:flex;gap:8px;margin-bottom:12px}.searchrow input{flex:1}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px;margin:9px 0;background:#fff}.itemtop{display:flex;justify-content:space-between;gap:8px;align-items:start}.item strong{display:block}.sub{font-size:12px;color:var(--muted);margin-top:3px}
+.empty{padding:22px 8px;text-align:center;color:var(--muted)}.pill{display:inline-block;background:#e7f4ea;color:#1b6c43;border-radius:99px;padding:3px 8px;font-size:11px;font-weight:700}
+.receipt{font-family:Arial,sans-serif;background:white;color:#111;padding:20px;max-width:600px;margin:auto;border:1px dashed #aaa}
+.receipt h2{text-align:center;margin:0}.receipt .center{text-align:center}.receipt table{width:100%;border-collapse:collapse;margin-top:12px}.receipt td{padding:7px 3px;border-bottom:1px solid #ddd}.receipt td:last-child{text-align:right}
+footer{text-align:center;color:#81786c;font-size:12px;padding:6px 10px 24px}
+@media(min-width:700px){.grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}.layout{display:grid;grid-template-columns:1.1fr .9fr;gap:14px;align-items:start}}
+@media(max-width:420px){.grid{grid-template-columns:1fr}.field.full{grid-column:auto}header{padding:17px 13px}h1{font-size:20px}.panel{padding:13px}}
+@media print{body{background:white}.no-print,header,main>.tabs,footer{display:none!important}#printArea{display:block!important}.receipt{border:0;max-width:none}}
+</style>
+</head>
+<body>
+<header><div class="head"><div class="logo">✦</div><div><h1>Golden Ledger</h1><p>Jewellery billing & customer history</p></div></div></header>
+<main>
+<div class="tabs no-print">
+<button class="tab active" data-tab="new">＋ New Bill</button>
+<button class="tab" data-tab="customers">♙ Customers</button>
+<button class="tab" data-tab="history">▤ Bill History / பில் வரலாறு</button>
+<button class="tab" data-tab="oldBills">📷 Paper Bills / பழைய பில்கள்</button>
+<button class="tab" data-tab="settings">⚙ Shop Details / கடை விவரம்</button>
+<button class="tab" id="languageToggle" type="button">தமிழ் / English</button>
+</div>
+<section id="new" class="page">
+<div class="layout">
+<div class="panel">
+<h2 data-en="Customer details" data-ta="வாடிக்கையாளர் விவரங்கள்">Customer details / வாடிக்கையாளர் விவரங்கள்</h2>
+<div class="grid">
+<div class="field full"><label for="customerName" data-en="Customer name *" data-ta="வாடிக்கையாளர் பெயர் *">Customer name / வாடிக்கையாளர் பெயர் *</label><input id="customerName" list="customerOptions" placeholder="Enter customer name" autocomplete="off"><datalist id="customerOptions"></datalist></div>
+<div class="field"><label for="phone" data-en="Phone number" data-ta="தொலைபேசி எண்">Phone number / தொலைபேசி எண்</label><input id="phone" inputmode="tel" placeholder="Optional"></div>
+<div class="field"><label for="billDate" data-en="Bill date" data-ta="பில் தேதி">Bill date / பில் தேதி</label><input id="billDate" type="date"></div>
+<div class="field full"><label for="address" data-en="Address (optional)" data-ta="முகவரி (விருப்பம்)">Address / முகவரி (விருப்பம்)</label><input id="address" placeholder="Customer address"></div>
+</div>
+<h3 data-en="Jewellery details" data-ta="நகை விவரங்கள்">Jewellery details / நகை விவரங்கள்</h3>
+<div class="grid">
+<div class="field full"><label for="itemName" data-en="Item name *" data-ta="நகையின் பெயர் *">Item name / நகையின் பெயர் *</label><input id="itemName" placeholder="e.g. Gold chain"></div>
+<div class="field"><label for="purity" data-en="Purity" data-ta="தங்கத்தின் தூய்மை">Purity / தங்கத்தின் தூய்மை</label><select id="purity"><option value="22K">22K / 22 காரட்</option><option value="24K">24K / 24 காரட்</option><option value="18K">18K / 18 காரட்</option><option value="Silver">Silver / வெள்ளி</option><option value="Other">Other / மற்றவை</option></select></div>
+<div class="field"><label for="weight" data-en="Net weight (grams) *" data-ta="நிகர எடை (கிராம்) *">Net weight / நிகர எடை (கிராம்) *</label><input id="weight" type="number" min="0" step="0.001" placeholder="e.g. 8.500"></div>
+<div class="field"><label for="rate" data-en="Rate per gram (₹) *" data-ta="ஒரு கிராமின் விலை (₹) *">Rate per gram / ஒரு கிராமின் விலை (₹) *</label><input id="rate" type="number" min="0" step="0.01" placeholder="Today's rate"></div>
+<div class="field"><label for="making" data-en="Making charges (₹)" data-ta="செய்கூலி (₹)">Making charges / செய்கூலி (₹)</label><input id="making" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label for="discount" data-en="Discount (₹)" data-ta="தள்ளுபடி (₹)">Discount / தள்ளுபடி (₹)</label><input id="discount" type="number" min="0" step="0.01" value="0"></div>
+<div class="field"><label for="advance" data-en="Advance paid (₹)" data-ta="முன்பணம் (₹)">Advance paid / முன்பணம் (₹)</label><input id="advance" type="number" min="0" step="0.01" value="0"></div>
+<div class="field full"><label for="notes" data-en="Notes (optional)" data-ta="குறிப்புகள் (விருப்பம்)">Notes / குறிப்புகள் (விருப்பம்)</label><input id="notes" placeholder="Stone charges, order details, etc."></div>
+</div>
+<div class="summary" aria-live="polite">
+<div class="moneyrow"><span>Gold value</span><strong id="goldValue">₹0.00</strong></div>
+<div class="moneyrow"><span>Making charges</span><strong id="makingValue">₹0.00</strong></div>
+<div class="moneyrow"><span>Discount</span><strong id="discountValue">− ₹0.00</strong></div>
+<div class="moneyrow total"><span>Bill total</span><strong id="totalValue">₹0.00</strong></div>
+<div class="moneyrow"><span>Advance paid</span><strong id="advanceValue">₹0.00</strong></div>
+<div class="moneyrow"><span>Balance due</span><strong id="balanceValue">₹0.00</strong></div>
+</div>
+<div class="actions">
+<button class="primary" id="saveBill">Save Bill / பில்லைச் சேமி</button>
+<button class="secondary" id="previewBill">Preview / Print / பார்க்க / அச்சிட</button>
+<button class="secondary" id="clearForm">Clear Form / படிவத்தை அழி</button>
+</div>
+<p class="note">Calculation: weight × rate + making charges − discount. Tax/GST is not included in this starter version.</p>
+</div>
+<div class="panel"><h2 data-en="Quick customer history" data-ta="வாடிக்கையாளர் பில் வரலாறு">Quick customer history / வாடிக்கையாளர் பில் வரலாறு</h2>
+<div class="field"><label for="historyCustomer">Find customer by name or phone</label><input id="historyCustomer" placeholder="Type a name or phone number"></div>
+<div id="quickHistory" class="empty">Saved customer bills will appear here.</div>
+</div>
+</div>
+</section>
+<section id="customers" class="page hidden">
+<div class="panel"><h2 data-en="Customers" data-ta="வாடிக்கையாளர்கள்">Customers / வாடிக்கையாளர்கள்</h2><div class="searchrow"><input id="customerSearch" placeholder="Search name or phone"><button class="secondary" id="exportData">Export backup / காப்புப்பிரதி</button></div><div id="customerList"></div><p class="note">Export a backup regularly. Records are stored in this browser on this device.</p></div>
+</section>
+<section id="history" class="page hidden">
+<div class="panel"><h2 data-en="Bill history" data-ta="பில் வரலாறு">Bill history / பில் வரலாறு</h2><div class="searchrow"><input id="billSearch" placeholder="Search bill number, customer or phone"></div><div id="billList"></div></div>
+</section>
+<section id="oldBills" class="page hidden">
+<div class="panel"><h2>Paper Bill Photos / காகித பில் புகைப்படங்கள்</h2>
+<p class="note">Take a clear photo of an old paper bill or choose it from your phone. Enter the customer's name so you can find it later.</p>
+<div class="grid">
+<div class="field"><label for="oldCustomerName">Customer name / வாடிக்கையாளர் பெயர் *</label><input id="oldCustomerName" placeholder="Customer name / வாடிக்கையாளர் பெயர்"></div>
+<div class="field"><label for="oldBillDate">Bill date / பில் தேதி</label><input id="oldBillDate" type="date"></div>
+<div class="field full"><label for="oldBillNote">Note / குறிப்பு</label><input id="oldBillNote" placeholder="e.g. old gold chain bill / பழைய பில் விவரம்"></div>
+<div class="field full"><label for="oldBillPhoto">Choose paper bill photo / பில் புகைப்படத்தைத் தேர்வு செய்யவும்</label><input id="oldBillPhoto" type="file" accept="image/*" capture="environment"></div>
+</div>
+<div class="actions"><button class="primary" id="saveOldBill">Save Paper Bill / பழைய பில்லைச் சேமி</button></div>
+<hr style="border:0;border-top:1px solid var(--line);margin:18px 0">
+<h3>Saved paper bills / சேமித்த பழைய பில்கள்</h3>
+<div class="field"><label for="oldBillSearch">Search customer / வாடிக்கையாளரைத் தேடுங்கள்</label><input id="oldBillSearch" placeholder="Type customer name / பெயரை உள்ளிடவும்"></div>
+<div id="oldBillList"><div class="empty">No paper bill photos saved yet.</div></div>
+<p class="note">Photos are saved in this browser on this device. Export your original photos separately too, and keep the phone locked because bills may contain private information.</p>
+</div></section>
+<section id="settings" class="page hidden">
+<div class="panel"><h2 data-en="Shop details" data-ta="கடை விவரங்கள்">Shop details / கடை விவரங்கள்</h2><div class="grid">
+<div class="field full"><label for="shopName">Shop name</label><input id="shopName" placeholder="Your Jewellery Shop"></div>
+<div class="field"><label for="shopPhone">Shop phone</label><input id="shopPhone" placeholder="Shop contact number"></div>
+<div class="field"><label for="shopAddress">Shop address</label><input id="shopAddress" placeholder="Shop address"></div>
+</div><div class="actions"><button class="primary" id="saveSettings">Save shop details / கடை விவரத்தைச் சேமி</button><button class="secondary" id="importButton">Import backup / காப்புப்பிரதியை இறக்கு</button><input id="importFile" class="hidden" type="file" accept="application/json,.json"></div><p class="note">Keep customer information private. Do not use a shared/public phone without a lock screen. This prototype stores data locally and does not sync to other devices.</p></div>
+</section>
+<section id="printArea" class="hidden"></section>
+</main>
+<footer>Golden Ledger · Starter prototype · Verify tax and statutory invoice requirements with your accountant before real-world use.</footer>
+<script>
+const $=id=>document.getElementById(id);
+const money=n=>'₹'+(Number(n)||0).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2});
+const read=(k,fallback)=>{try{return JSON.parse(localStorage.getItem(k))??fallback}catch{return fallback}};
+let bills=read('gl_bills',[]), customers=read('gl_customers',[]), settings=read('gl_settings',{name:'',phone:'',address:''}), editingBillId=null;
+const fields=['customerName','phone','billDate','address','itemName','purity','weight','rate','making','discount','advance','notes'];
+function persist(){localStorage.setItem('gl_bills',JSON.stringify(bills));localStorage.setItem('gl_customers',JSON.stringify(customers));localStorage.setItem('gl_settings',JSON.stringify(settings))}
+function val(id){return $(id).value.trim()}
+function num(id){return Math.max(0,Number($(id).value)||0)}
+function calc(){const gold=num('weight')*num('rate'),making=num('making'),discount=num('discount'),total=Math.max(0,gold+making-discount),advance=num('advance');$('goldValue').textContent=money(gold);$('makingValue').textContent=money(making);$('discountValue').textContent='− '+money(discount);$('totalValue').textContent=money(total);$('advanceValue').textContent=money(advance);$('balanceValue').textContent=money(Math.max(0,total-advance));return {gold,making,discount,total,advance,balance:Math.max(0,total-advance)}}
+['weight','rate','making','discount','advance'].forEach(id=>$(id).addEventListener('input',calc));
+$('billDate').value=new Date().toISOString().slice(0,10);
+function customerUpsert(name,phone,address){let c=customers.find(x=>x.name.toLowerCase()===name.toLowerCase()&&(!phone||!x.phone||x.phone===phone));if(!c){c={id:crypto.randomUUID(),name,phone,address,createdAt:new Date().toISOString()};customers.push(c)}else{c.name=name;c.phone=phone||c.phone;c.address=address||c.address}return c}
+function fillCustomer(name){const c=customers.find(x=>x.name.toLowerCase()===name.toLowerCase());if(c){$('phone').value=c.phone||'';$('address').value=c.address||'';showQuickHistory(name)}}
+$('customerName').addEventListener('change',()=>fillCustomer(val('customerName')));
+$('customerName').addEventListener('input',()=>{const n=val('customerName');if(n)showQuickHistory(n)});
+function getForm(){return {customerName:val('customerName'),phone:val('phone'),date:val('billDate'),address:val('address'),itemName:val('itemName'),purity:val('purity'),weight:num('weight'),rate:num('rate'),making:num('making'),discount:num('discount'),advance:num('advance'),notes:val('notes'),...calc()}}
+function saveBill(){const d=getForm();if(!d.customerName||!d.itemName||d.weight<=0||d.rate<=0){alert('Please enter customer name, item name, weight and rate per gram.');return}if(d.discount>d.gold+d.making){if(!confirm('Discount is greater than the jewellery value plus making charges. Save anyway?'))return}
+let c=customerUpsert(d.customerName,d.phone,d.address);const now=new Date().toISOString();if(editingBillId){const old=bills.find(b=>b.id===editingBillId);if(old){Object.assign(old,d,{customerId:c.id,updatedAt:now})}}else{bills.unshift({...d,id:crypto.randomUUID(),billNo:'JB-'+new Date().getFullYear()+'-'+String(Date.now()).slice(-6),customerId:c.id,createdAt:now})}persist();refresh();alert('Bill saved on this device.');editingBillId=null}
+$('saveBill').onclick=saveBill;
+$('previewBill').onclick=()=>{const d=getForm();if(!d.customerName||!d.itemName){alert('Enter customer name and item name first.');return}renderReceipt({...d,billNo:editingBillId?(bills.find(b=>b.id===editingBillId)||{}).billNo:'PREVIEW',createdAt:new Date().toISOString()});window.print()};
+$('clearForm').onclick=()=>{if(!confirm('Clear the current bill form?'))return;fields.forEach(id=>{if(id==='purity')$(id).value='22K';else if(['making','discount','advance'].includes(id))$(id).value='0';else $(id).value=''});$('billDate').value=new Date().toISOString().slice(0,10);editingBillId=null;calc()};
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function renderReceipt(b){const shop=settings;const area=$('printArea');area.classList.remove('hidden');area.innerHTML=`<div class="receipt"><h2>${esc(shop.name||'JEWELLERY SHOP')}</h2><div class="center">${esc(shop.address||'')}${shop.phone?'<br>Phone: '+esc(shop.phone):''}</div><hr><div><b>Bill:</b> ${esc(b.billNo||'Preview')}<br><b>Date:</b> ${esc(b.date||new Date().toLocaleDateString())}<br><b>Customer:</b> ${esc(b.customerName)}<br><b>Phone:</b> ${esc(b.phone||'—')}<br><b>Address:</b> ${esc(b.address||'—')}</div><table><tr><td><b>Item</b></td><td><b>Details</b></td></tr><tr><td>${esc(b.itemName)}</td><td>${esc(b.purity)} · ${esc(b.weight)} g</td></tr><tr><td>Rate per gram</td><td>${money(b.rate)}</td></tr><tr><td>Gold value</td><td>${money(b.gold)}</td></tr><tr><td>Making charges</td><td>${money(b.making)}</td></tr><tr><td>Discount</td><td>− ${money(b.discount)}</td></tr><tr><td><b>Total</b></td><td><b>${money(b.total)}</b></td></tr><tr><td>Advance paid</td><td>${money(b.advance)}</td></tr><tr><td><b>Balance due</b></td><td><b>${money(b.balance)}</b></td></tr></table><p>${esc(b.notes||'')}</p><p class="center">Thank you for your purchase!</p><p class="center" style="font-size:11px">Starter receipt — tax/GST not included.</p></div>`;area.scrollIntoView({behavior:'smooth'})}
+function editBill(id){const b=bills.find(x=>x.id===id);if(!b)return;editingBillId=id;fields.forEach(k=>{if($(k))$(k).value=b[k]??(k==='making'||k==='discount'||k==='advance'?'0':'')});calc();switchTab('new');window.scrollTo({top:0,behavior:'smooth'})}
+function removeBill(id){if(!confirm('Delete this saved bill? This cannot be undone unless you have a backup.'))return;bills=bills.filter(b=>b.id!==id);persist();refresh()}
+function showQuickHistory(query){const q=(query||'').toLowerCase();const found=bills.filter(b=>b.customerName.toLowerCase().includes(q)||(b.phone||'').includes(q)).slice(0,6);$('quickHistory').innerHTML=found.length?found.map(b=>`<div class="item"><div class="itemtop"><div><strong>${esc(b.billNo)} · ${esc(b.itemName)}</strong><div class="sub">${esc(b.date)} · ${esc(b.customerName)}</div></div><b>${money(b.total)}</b></div><div class="sub">Paid ${money(b.advance)} · Balance ${money(b.balance)}</div><div class="actions no-print"><button class="secondary small" onclick="viewBill('${b.id}')">View receipt</button><button class="secondary small" onclick="editBill('${b.id}')">Edit</button></div></div>`).join(''):'<div class="empty">No saved bills for this customer yet.</div>'}
+$('historyCustomer').addEventListener('input',()=>showQuickHistory(val('historyCustomer')));
+function viewBill(id){const b=bills.find(x=>x.id===id);if(!b)return;renderReceipt(b);window.print()}
+function switchTab(tab){document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden',p.id!==tab));document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$('printArea').classList.add('hidden');if(tab==='customers')renderCustomers();if(tab==='history')renderBills()}
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+function renderCustomers(){const q=val('customerSearch').toLowerCase();const list=customers.filter(c=>(c.name+' '+c.phone).toLowerCase().includes(q));$('customerList').innerHTML=list.length?list.map(c=>{const bs=bills.filter(b=>b.customerId===c.id||b.customerName.toLowerCase()===c.name.toLowerCase());return `<div class="item"><div class="itemtop"><div><strong>${esc(c.name)}</strong><div class="sub">${esc(c.phone||'No phone')} · ${esc(c.address||'No address')}</div></div><span class="pill">${bs.length} bills</span></div><div class="sub">Total purchases: ${money(bs.reduce((s,b)=>s+b.total,0))} · Outstanding: ${money(bs.reduce((s,b)=>s+b.balance,0))}</div><div class="actions"><button class="secondary small" onclick="showQuickHistory('${esc(c.name).replace(/'/g,"\\'")}');switchTab('new');$('historyCustomer').value='${esc(c.name).replace(/'/g,"\\'")}'">Purchase history</button></div></div>`}).join(''):'<div class="empty">No customers saved yet. Save a bill to add a customer.</div>';const opts=$('customerOptions');opts.innerHTML=customers.map(c=>`<option value="${esc(c.name)}"></option>`).join('')}
+$('customerSearch').addEventListener('input',renderCustomers);
+function renderBills(){const q=val('billSearch').toLowerCase();const list=bills.filter(b=>(b.billNo+' '+b.customerName+' '+b.phone).toLowerCase().includes(q));$('billList').innerHTML=list.length?list.map(b=>`<div class="item"><div class="itemtop"><div><strong>${esc(b.billNo)} · ${esc(b.customerName)}</strong><div class="sub">${esc(b.date)} · ${esc(b.itemName)} · ${esc(b.weight)} g</div></div><b>${money(b.total)}</b></div><div class="sub">Paid ${money(b.advance)} · Balance ${money(b.balance)}</div><div class="actions"><button class="secondary small" onclick="viewBill('${b.id}')">Print / View</button><button class="secondary small" onclick="editBill('${b.id}')">Edit</button><button class="danger small" onclick="removeBill('${b.id}')">Delete</button></div></div>`).join(''):'<div class="empty">No bills match your search.</div>'}
+$('billSearch').addEventListener('input',renderBills);
+function refresh(){renderCustomers();renderBills();showQuickHistory(val('customerName')||val('historyCustomer'));calc()}
+$('saveSettings').onclick=()=>{settings={name:val('shopName'),phone:val('shopPhone'),address:val('shopAddress')};persist();alert('Shop details saved.');};
+function download(filename,text,type){const a=document.createElement('a');const blob=new Blob([text],{type});a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000)}
+$('exportData').onclick=()=>download('golden-ledger-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({bills,customers,settings},null,2),'application/json');
+$('importButton').onclick=()=>$('importFile').click();
+$('importFile').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{const d=JSON.parse(await f.text());if(!Array.isArray(d.bills)||!Array.isArray(d.customers))throw Error();if(!confirm('Import and replace the current bills and customers with this backup? Export your current data first if needed.'))return;bills=d.bills;customers=d.customers;settings=d.settings||settings;persist();$('shopName').value=settings.name||'';$('shopPhone').value=settings.phone||'';$('shopAddress').value=settings.address||'';refresh();alert('Backup imported.')}catch{alert('That file does not look like a valid Golden Ledger backup.')}e.target.value=''};
+$('shopName').value=settings.name||'';$('shopPhone').value=settings.phone||'';$('shopAddress').value=settings.address||'';
+
+// Paper-bill photo archive uses IndexedDB, which is more suitable for images than localStorage.
+let oldBillDB;
+const oldBillDBReady = new Promise((resolve,reject)=>{
+  const req=indexedDB.open('GoldenLedgerPaperBills',1);
+  req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains('photos'))db.createObjectStore('photos',{keyPath:'id'})};
+  req.onsuccess=()=>{oldBillDB=req.result;resolve(oldBillDB)};
+  req.onerror=()=>reject(req.error);
+});
+async function photoStore(mode, record){const db=await oldBillDBReady;return new Promise((resolve,reject)=>{const tx=db.transaction('photos',mode);const store=tx.objectStore('photos');let req;if(mode==='readonly')req=store.getAll();else req=store.put(record);tx.oncomplete=()=>resolve(req?.result);tx.onerror=()=>reject(tx.error);if(req){req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error)}})}
+$('oldBillDate').value=new Date().toISOString().slice(0,10);
+$('saveOldBill').onclick=async()=>{
+  const name=val('oldCustomerName'),file=$('oldBillPhoto').files[0];
+  if(!name||!file){alert('Enter the customer name and choose a bill photo. / வாடிக்கையாளர் பெயரையும் பில் புகைப்படத்தையும் தேர்வு செய்யவும்.');return}
+  if(!file.type.startsWith('image/')){alert('Please choose an image file. / புகைப்படக் கோப்பைத் தேர்வு செய்யவும்.');return}
+  try{const record={id:crypto.randomUUID(),customerName:name,date:val('oldBillDate'),note:val('oldBillNote'),fileName:file.name,mime:file.type,blob:file,createdAt:new Date().toISOString()};await photoStore('readwrite',record);$('oldCustomerName').value='';$('oldBillNote').value='';$('oldBillPhoto').value='';renderOldBills();alert('Paper bill photo saved for '+name+'. / '+name+' என்ற பெயரில் பழைய பில் சேமிக்கப்பட்டது.')}catch(e){alert('Could not save the photo. Your browser may have blocked local storage or be out of space. / புகைப்படத்தைச் சேமிக்க முடியவில்லை.')}
+};
+async function renderOldBills(){try{const q=val('oldBillSearch').toLowerCase();const records=await photoStore('readonly');const list=records.filter(r=>(r.customerName+' '+r.note+' '+r.date).toLowerCase().includes(q)).sort((a,b)=>(b.date||'').localeCompare(a.date||''));$('oldBillList').innerHTML=list.length?list.map(r=>`<div class="item"><div class="itemtop"><div><strong>${esc(r.customerName)}</strong><div class="sub">${esc(r.date||'No date')} · ${esc(r.note||r.fileName)}</div></div><button class="danger small" onclick="deleteOldBill('${r.id}')">Delete / நீக்கு</button></div><div class="actions"><button class="secondary small" onclick="viewOldBill('${r.id}')">View photo / புகைப்படம் பார்க்க</button><a class="secondary small" style="text-decoration:none;border-radius:10px;padding:7px 10px;font-size:12px;font-weight:650" href="${URL.createObjectURL(r.blob)}" download="${esc(r.fileName)}">Save photo / புகைப்படத்தைப் பதிவிறக்கு</a></div><div id="oldPhoto-${r.id}"></div></div>`).join(''):'<div class="empty">No paper bill photos found. / பழைய பில் புகைப்படங்கள் இல்லை.</div>'}catch(e){$('oldBillList').innerHTML='<div class="empty">Photo storage is not available in this browser.</div>'}}
+async function viewOldBill(id){const records=await photoStore('readonly');const r=records.find(x=>x.id===id);if(!r)return;const area=$('oldPhoto-'+id);if(area){const url=URL.createObjectURL(r.blob);area.innerHTML=`<img src="${url}" alt="Paper bill for ${esc(r.customerName)}" style="width:100%;height:auto;max-height:600px;object-fit:contain;margin-top:10px;border-radius:8px">`}}
+async function deleteOldBill(id){if(!confirm('Delete this saved paper bill photo? / இந்த பில் புகைப்படத்தை நீக்கவா?'))return;const db=await oldBillDBReady;await new Promise((resolve,reject)=>{const tx=db.transaction('photos','readwrite');tx.objectStore('photos').delete(id);tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error)});renderOldBills()}
+$('oldBillSearch').addEventListener('input',renderOldBills);
+document.querySelector('[data-tab="oldBills"]').addEventListener('click',renderOldBills);
+let tamilMode=false;
+$('languageToggle').onclick=()=>{tamilMode=!tamilMode;document.querySelectorAll('[data-en][data-ta]').forEach(el=>el.textContent=tamilMode?el.dataset.ta:el.dataset.en);$('languageToggle').textContent=tamilMode?'English / ஆங்கிலம்':'தமிழ் / English'};
+refresh();
+</script>
+</body></html>
